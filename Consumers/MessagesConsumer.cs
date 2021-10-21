@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,9 +35,24 @@ namespace Fundamentos.RabbitMQ.Consumers
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-            _channel.QueueBind(_config.Queue, _config.FanoutExchange, "");
+
+            #region Cria estrutura para DLQ
+            _channel.ExchangeDeclare("DeadLetterExchange", ExchangeType.Fanout);
+            _channel.QueueDeclare("DeadLetterQueue", true, false, false);
+            _channel.QueueBind("DeadLetterQueue", "DeadLetterExchange", "");
+            #endregion
+
+            _channel.QueueDeclare(
+                queue: _config.Queue,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: new Dictionary<string, object>()
+                {
+                    { "x-dead-letter-exchange", "DeadLetterExchange" }
+                });
         }
-        
+
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var consumer = new EventingBasicConsumer(_channel);

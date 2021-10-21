@@ -39,16 +39,16 @@ namespace Fundamentos.RabbitMQ
             services.AddHostedService<TopicExchangeRioConsumer>();
             #endregion
 
-            #region Consumidores MassTransit
-            services.AddMassTransit(bus =>
-            {
-                bus.UsingRabbitMq((ctx, busConfigurator) =>
-                {
-                    busConfigurator.Host(Configuration.GetConnectionString("RabbitMq"));
-                });
-            });
-            services.AddMassTransitHostedService();
-            #endregion
+            //#region Consumidores MassTransit
+            //services.AddMassTransit(bus =>
+            //{
+            //    bus.UsingRabbitMq((ctx, busConfigurator) =>
+            //    {
+            //        busConfigurator.Host(Configuration.GetConnectionString("RabbitMq"));
+            //    });
+            //});
+            //services.AddMassTransitHostedService();
+            //#endregion
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

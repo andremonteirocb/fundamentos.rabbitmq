@@ -34,43 +34,12 @@ namespace Fundamentos.RabbitMQ.Controllers
             return Accepted();
         }
 
-        private void Channel_BasicReturn(object sender, BasicReturnEventArgs e)
-        {
-            var message = Encoding.UTF8.GetString(e.Body.ToArray());
-            Console.WriteLine($"{DateTime.UtcNow:o} Basic Return => {message}");
-
-            //Enviar(message, _config.Queue);
-        }
-
-        private void Channel_BasicAcks(object sender, BasicAckEventArgs e)
-        {
-            Console.WriteLine($"{DateTime.UtcNow:o} Basic Acks");
-        }
-
-        private void Channel_BasicNacks(object sender, BasicNackEventArgs e)
-        {
-            Console.WriteLine($"{DateTime.UtcNow:o} Basic Nacks");
-        }
-
         private void Enviar(string message, string routingKey)
         {
             using (var connection = _factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
                 {
-                    #region prepara a estrutura de DLQ
-
-                    channel.ExchangeDeclare("DeadLetterExchange", ExchangeType.Fanout);
-                    channel.QueueDeclare("DeadLetterQueue", true, false, false);
-                    channel.QueueBind("DeadLetterQueue", "DeadLetterExchange", "");
-
-                    var arguments = new Dictionary<string, object>()
-                    {
-                        { "x-dead-letter-exchange", "DeadLetterExchange" }
-                    };
-
-                    #endregion
-
                     #region Confirm and Return Message
 
                     //ativa a confirmação de mensagem
@@ -92,7 +61,10 @@ namespace Fundamentos.RabbitMQ.Controllers
                         durable: false,
                         exclusive: false,
                         autoDelete: false,
-                        arguments: arguments);
+                        arguments: new Dictionary<string, object>()
+                        {
+                            { "x-dead-letter-exchange", "DeadLetterExchange" }
+                        });
 
                     var bytesMessage = Encoding.UTF8.GetBytes(message);
                     channel.BasicPublish(
@@ -105,6 +77,24 @@ namespace Fundamentos.RabbitMQ.Controllers
                     channel.WaitForConfirms(new TimeSpan(0, 0, 5));
                 }
             }
+        }
+
+        private void Channel_BasicReturn(object sender, BasicReturnEventArgs e)
+        {
+            var message = Encoding.UTF8.GetString(e.Body.ToArray());
+            Console.WriteLine($"{DateTime.UtcNow:o} Basic Return => {message}");
+
+            //Enviar(message, _config.Queue);
+        }
+
+        private void Channel_BasicAcks(object sender, BasicAckEventArgs e)
+        {
+            Console.WriteLine($"{DateTime.UtcNow:o} Basic Acks");
+        }
+
+        private void Channel_BasicNacks(object sender, BasicNackEventArgs e)
+        {
+            Console.WriteLine($"{DateTime.UtcNow:o} Basic Nacks");
         }
     }
 }
