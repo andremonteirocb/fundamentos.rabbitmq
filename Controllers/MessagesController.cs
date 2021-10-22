@@ -73,7 +73,6 @@ namespace Fundamentos.RabbitMQ.Controllers
                         basicProperties: null,
                         body: bytesMessage);
 
-                    //aguarda 5 seconds até receber a confirmação
                     channel.WaitForConfirms(new TimeSpan(0, 0, 5));
                 }
             }
