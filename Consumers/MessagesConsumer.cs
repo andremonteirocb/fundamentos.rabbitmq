@@ -35,6 +35,7 @@ namespace Fundamentos.RabbitMQ.Consumers
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
+            _channel.BasicQos(prefetchSize: 0, prefetchCount: 5, global: false);
 
             #region Cria estrutura para DLQ
             _channel.ExchangeDeclare("DeadLetterExchange", ExchangeType.Fanout);
