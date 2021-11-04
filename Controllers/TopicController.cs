@@ -32,10 +32,13 @@ namespace Fundamentos.RabbitMQ.Controllers
                     var stringfiedMessage = JsonConvert.SerializeObject(message);
                     var bytesMessage = Encoding.UTF8.GetBytes(stringfiedMessage);
 
+                    var basicProperties = channel.CreateBasicProperties();
+                    basicProperties.Persistent = true;
+
                     channel.BasicPublish(
                         exchange: _config.TopicExchange,
                         routingKey: message.Content,
-                        basicProperties: null,
+                        basicProperties: basicProperties,
                         body: bytesMessage);
                 }
             }

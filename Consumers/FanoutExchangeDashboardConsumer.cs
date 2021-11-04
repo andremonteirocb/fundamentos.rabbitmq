@@ -27,6 +27,7 @@ namespace Fundamentos.RabbitMQ.Consumers
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
+            _channel.BasicQos(prefetchSize: 0, prefetchCount: 5, global: false);
             _channel.ExchangeDeclare(_config.FanoutExchange, ExchangeType.Fanout, true);
             _channel.QueueDeclare(QUEUE_NAME, true, false, false, null);
             _channel.QueueBind(QUEUE_NAME, _config.FanoutExchange, "");
@@ -35,7 +36,6 @@ namespace Fundamentos.RabbitMQ.Consumers
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var consumer = new EventingBasicConsumer(_channel);
-
             consumer.Received += (sender, eventArgs) =>
             {
                 var contentArray = eventArgs.Body.ToArray();

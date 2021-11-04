@@ -54,8 +54,7 @@ namespace Fundamentos.RabbitMQ.Controllers
                     channel.BasicReturn += Channel_BasicReturn;
 
                     #endregion
-
-                    channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                    
                     channel.QueueDeclare(
                         queue: _config.Queue,
                         durable: false,
